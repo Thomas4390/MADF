@@ -1,11 +1,11 @@
-from typing import Tuple, Dict, Any, Union
+from typing import Tuple, Dict, Any, Union, Literal, Optional
 
 import numpy as np
 import pandas as pd
 
 
 class CrossValidationData:
-    def __init__(self, trainData: Dict[int, pd.DataFrame], testData: Dict[int, Dict[Union[0, 1], Union[None, pd.DataFrame]]], numberFolds: int):
+    def __init__(self, trainData: Dict[int, pd.DataFrame], testData: Dict[int, Dict[Literal[0, 1], Optional[pd.DataFrame]]], numberFolds: int):
         '''
         :param trainData : Un dictionnaire dont la clé est le fold number et item est le train dataframe
         :param testData : Un dictionnaire dont la clé est le fold number et item un autre dictionnaire.
@@ -22,10 +22,10 @@ class CrossValidationData:
     def __iter__(self):
         return self
 
-    def __next__(self) -> Tuple[pd.DataFrame, Dict[Union[0, 1], pd.DataFrame]]:
+    def __next__(self) -> Tuple[pd.DataFrame, Dict[Literal[0, 1], Optional[pd.DataFrame]]]:
         '''
         Permet d'obtenir le train et test set d'un fold à chaque itération.
-        :return: trainSet, testSet
+        :return : trainSet, testSet
         '''
         if self.foldsRemaining == 0:
             # Permet de pouvoir re-call une iteration sur la classe
@@ -50,12 +50,16 @@ def crossValidationSplitForTimeSeries(data: pd.DataFrame, numberFolds: int = 5, 
     :param numberFolds : Le nombre de fois qu'on veut séparer les données
     :return : CrossValidationData pour faire la cross validation
     '''
+
+    if not isinstance(data, pd.DataFrame):
+        raise Exception('data is not pd.DataFrame')
+
     if not isinstance(data.index, pd.DatetimeIndex):
         raise Exception("Index should be pd.Datetime")
 
     trainData: Dict[int, Any] = {}
     testData = {}
-    trainLength = np.ceil(data.shape[0] / numberFolds)
+    trainLength = int(np.ceil(data.shape[0] / numberFolds))
 
     if trainLength <= cushion:
         raise Exception('cushion is too big for the number of folds. Choose a smaller cushion or smaller numberFolds')
@@ -76,4 +80,4 @@ def crossValidationSplitForTimeSeries(data: pd.DataFrame, numberFolds: int = 5, 
         else:
             testData[fold][1] = data.iloc[((fold + 1) * trainLength + cushion):, :]
 
-        return CrossValidationData(trainData, testData, numberFolds)
+    return CrossValidationData(trainData, testData, numberFolds)
