@@ -4,7 +4,7 @@ import pandas as pd
 import yfinance as yf
 
 
-def get_sp_data(start='2008-01-01', end=None):
+def get_sp_data(start: str = '2008-01-01', end: str = None) -> pd.DataFrame:
     # Get the current SP components, and get a tickers list
     sp_assets = pd.read_html(
         'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies')[0]
@@ -23,4 +23,5 @@ def get_sp_data(start='2008-01-01', end=None):
 
 if __name__ == '__main__':
     sp_data = get_sp_data()
+    
 
