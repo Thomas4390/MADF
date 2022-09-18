@@ -13,8 +13,8 @@ def get_sp_data(start='2008-01-01', end=None):
     try:
         data = yf.download(assets, start=start, end=end)
         filename = 'sp_500_data.pkl'
-        data.to_pickle(filename)
-        print('Data saved at {}'.format(filename))
+        data.to_pickle(f"data/{filename}")
+        print(f"Data saved at {filename}")
     except ValueError:
         print('Failed download, try again.')
         data = None
