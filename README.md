@@ -43,3 +43,6 @@ Vous devez fournir un fichier zip qui contient votre code. Le code doit être s
 - functions folder outputs folder	with R files containing your functions
 - outputs folder 	with all the tables and plots generated from run_strategy.R.
 - L’évaluation du code tiendra compte de la structure du projet, de la convention de code, de l’efficacité et de la justesse.
+
+
+![layers algo trading](layers_algo_trading.png "Layers of Algo Trading")
