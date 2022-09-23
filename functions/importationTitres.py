@@ -1,6 +1,17 @@
-# Import the necessary modules
-import pandas as pd
+from typing import List
 import yfinance as yf
+
+import pandas as pd
+
+
+def importDataFromYahoo(
+        tickers: List[str], timing: str = "Adj Close", interval: str = "1d"
+) -> pd.DataFrame:
+    priceData: pd.DataFrame = yf.download(tickers, interval=interval, period="max")[
+        timing
+    ]
+    priceData.replace(0, pd.NA, inplace=True)
+    return priceData
 
 
 def get_sp_data(start: str = "2008-01-01", end: str = None) -> pd.DataFrame:
@@ -20,7 +31,3 @@ def get_sp_data(start: str = "2008-01-01", end: str = None) -> pd.DataFrame:
         print("Failed download, try again.")
         data = None
     return data
-
-
-if __name__ == "__main__":
-    sp_data = get_sp_data()
