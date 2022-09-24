@@ -19,6 +19,7 @@ yieldTitresSP = transformPricesToYield(prixTitres)
 # il faut une rolling window pour l'étape 4 à 8.
 
 rollingWindowData = MyRollingWindow(yieldTitresSP, window=ROLLING_WINDOW)
+newVar = pd.DataFrame(index=prixTitres.index)
 
 for windowData in rollingWindowData:
     # Étape 4 : Analyse de la dépendance (covariance) à chaque période.
@@ -31,7 +32,7 @@ for windowData in rollingWindowData:
     # Étape 6 : Créer les nouvelles variables "X" à trader / analyser (différence ou ratio entre les paires des PRIX de titres sélectionnées)
     # (A - B) ou (A / B)
     pricesAfterRollingWindow = prixTitres.loc[prixTitres.index > windowData.index[-1], :]
-    newVar = create_variable_to_trade(pricesAfterRollingWindow, nPairs)
+    newVar = newVar.join(create_variable_to_trade(pricesAfterRollingWindow, nPairs))
 
 
     # Étape 7 : Pour chacune des variables "X", on doit trouver des variables explicatives pour prédire le rendement futur.
