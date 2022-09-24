@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from functions.importationTitres import get_sp_data
 from collections.abc import Iterator
+from typing import List
 
 
 
@@ -38,7 +39,7 @@ def compute_correlation(df: pd.DataFrame, column: str = "Adj Close") -> pd.DataF
 
     return df[column].corr()
 
-def find_n_pairs(df_corr: np.ndarray, n_max:int = 10) -> List[List]:
+def find_n_max_pairs(df_corr: np.ndarray, n_max:int = 10) -> List[List]:
     """
     Trouve les n_max paires avec le plus grand coefficient de corrélation
     sans prendre en compte la diagonale de 1.
@@ -62,4 +63,32 @@ def find_n_pairs(df_corr: np.ndarray, n_max:int = 10) -> List[List]:
     # Retrouve les paires associés avec les coordonnées x et y.
     pairs_list = [[df_corr.index[a], df_corr.columns[b]] for a, b in zip(x, y)]
     return pairs_list
+
+def create_variable_to_trade(df_close: pd.DataFrame, pairs_list: List[List], method: str = "diff"):
+    """
+
+    :param df_close: Une DataFrame qui contient la série des prix "Adj Close"
+    au cours du temps.
+    :param pairs_list: La liste des n plus grandes paires renvoyés par
+    la fonction find_n_max_pairs
+    :param method: str. Peut prendre la valeur "diff" par défaut pour faire
+    la différence entre deux séries ou la valeur "div" pour faire la division.
+    :return:
+    """
+    df_diff = pd.DataFrame()
+
+    if method=="diff":
+        for i in range(len(pairs_list)):
+            df_diff[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = \
+                df_close[pairs_list[i][0]] - df_close[pairs_list[i][1]]
+
+    elif method=="div":
+        for i in range(len(pairs_list)):
+            df_diff[f"{pairs_list[i][0]} / {pairs_list[i][1]}"] = \
+                df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
+
+    else:
+        print("Invalid Method. Please try 'diff' or 'div'.")
+
+    return df_diff
 
