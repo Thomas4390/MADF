@@ -5,11 +5,11 @@ import pandas as pd
 
 
 def importDataFromYahoo(
-        tickers: List[str], timing: str = "Adj Close", interval: str = "1d"
+    tickers: List[str], timing: str = "Adj Close", interval: str = "1d"
 ) -> pd.DataFrame:
-    priceData: pd.DataFrame = yf.download(tickers, interval=interval, period="max")[
-        timing
-    ]
+    priceData: pd.DataFrame = yf.download(tickers,
+                                          interval=interval,
+                                          period="max")[timing]
     priceData.replace(0, pd.NA, inplace=True)
     return priceData
 
