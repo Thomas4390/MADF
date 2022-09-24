@@ -1,43 +1,24 @@
 import numpy as np
 import pandas as pd
+
+from Class.RollingWindow import MyRollingWindow
 from functions.importationTitres import get_sp_data
 from collections.abc import Iterator
 from typing import List
 
 
 def transformPricesToYield(
-    priceData: pd.DataFrame, yieldPeriod: int = 1
+        priceData: pd.DataFrame, yieldPeriod: int = 1
 ) -> pd.DataFrame:
     yieldData = priceData / priceData.shift(yieldPeriod) - 1
     return yieldData.iloc[yieldPeriod:, :]
 
 
-def createRollingData(df: pd.DataFrame, window: int):
-    # À chaque next: i += 1
-    # on a comme retour le dataframe qui va de data.iloc[i*window : (i+1)*window, :]
-    class MyRollingWindow(Iterator):
-        def __init__(self, df, window, i: int = 0):
-            self.df = df
-            self.window = window
-            self.i = i
-
-        def __next__(self):
-            if self.i == 0:
-                return self.df.iloc[self.i * self.window : (self.i + 1) * self.window]
-
-            self.i += 1
-
-            return self.df.iloc[self.i * self.window : (self.i + 1) * self.window]
-
-    return MyRollingWindow
-
-
 def compute_correlation(df: pd.DataFrame, column: str = "Adj Close") -> pd.DataFrame:
-
     return df[column].corr()
 
 
-def find_n_max_pairs(df_corr: np.ndarray, n_max: int = 10) -> List[List]:
+def find_n_max_pairs(df_corr: pd.DataFrame, n_max: int = 10) -> List[List]:
     """
     Trouve les n_max paires avec le plus grand coefficient de corrélation
     sans prendre en compte la diagonale de 1.
@@ -52,19 +33,25 @@ def find_n_max_pairs(df_corr: np.ndarray, n_max: int = 10) -> List[List]:
     # On convertit la matrice de corrélation au format ndarray
     df_corr_np = df_corr.to_numpy()
     # On remplit la diagonale de 1
-    np.fill_diagonal(df_corr_np, 0)
+    df_corr_np = np.tril([1] * df_corr_np.shape[0], -1) * df_corr_np
+
     # Trouve les n plus grands indices dans l'array "flattened"
-    indices = (np.abs(df_corr_np)).argpartition(n_max, axis=None)[:n_max]
+
+    # indices = np.unravel_index(df_corr_np.argmax(), df_corr_np.shape)
+    # indices = np.argpartition(df_corr_np)[-n_max:]
+    x, y = np.unravel_index(np.argsort(df_corr_np, axis=None), df_corr_np.shape)
+    # indices = np.abs(df_corr_np).argpartition(n_max, axis=None) #[-n_max:]
+
     # Convertit les indices "flattened" en indices matriciels selon
     # le format de la matrice de corrélation
-    x, y = np.unravel_index(indices, df_corr_np.shape)
+    # x, y = np.unravel_index(indices, df_corr_np.shape)
     # Retrouve les paires associés avec les coordonnées x et y.
-    pairs_list = [[df_corr.index[a], df_corr.columns[b]] for a, b in zip(x, y)]
+    pairs_list = [[df_corr.index[a], df_corr.columns[b]] for a, b in zip(x[-n_max:], y[-n_max:])]
     return pairs_list
 
 
 def create_variable_to_trade(
-    df_close: pd.DataFrame, pairs_list: List[List], method: str = "diff"
+        df_close: pd.DataFrame, pairs_list: List[List], method: str = "diff"
 ) -> pd.DataFrame:
     """
     :param df_transform: pd.Dataframe. Contient la série des prix "Adj Close"
@@ -81,13 +68,13 @@ def create_variable_to_trade(
     if method == "diff":
         for i in range(len(pairs_list)):
             df_transform[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = (
-                df_close[pairs_list[i][0]] - df_close[pairs_list[i][1]]
+                    df_close[pairs_list[i][0]] - df_close[pairs_list[i][1]]
             )
 
     elif method == "div":
         for i in range(len(pairs_list)):
             df_transform[f"{pairs_list[i][0]} / {pairs_list[i][1]}"] = (
-                df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
+                    df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
             )
 
     else:
