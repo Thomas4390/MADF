@@ -5,9 +5,8 @@ from collections.abc import Iterator
 from typing import List
 
 
-
 def transformPricesToYield(
-        priceData: pd.DataFrame, yieldPeriod: int = 1
+    priceData: pd.DataFrame, yieldPeriod: int = 1
 ) -> pd.DataFrame:
     yieldData = priceData / priceData.shift(yieldPeriod) - 1
     return yieldData.iloc[yieldPeriod:, :]
@@ -17,7 +16,6 @@ def createRollingData(df: pd.DataFrame, window: int):
     # À chaque next: i += 1
     # on a comme retour le dataframe qui va de data.iloc[i*window : (i+1)*window, :]
     class MyRollingWindow(Iterator):
-
         def __init__(self, df, window, i: int = 0):
             self.df = df
             self.window = window
@@ -25,21 +23,21 @@ def createRollingData(df: pd.DataFrame, window: int):
 
         def __next__(self):
             if self.i == 0:
-                return self.df.iloc[
-                       self.i * self.window: (self.i + 1) * self.window]
+                return self.df.iloc[self.i * self.window : (self.i + 1) * self.window]
 
             self.i += 1
 
-            return self.df.iloc[
-                   self.i * self.window: (self.i + 1) * self.window]
+            return self.df.iloc[self.i * self.window : (self.i + 1) * self.window]
 
     return MyRollingWindow
+
 
 def compute_correlation(df: pd.DataFrame, column: str = "Adj Close") -> pd.DataFrame:
 
     return df[column].corr()
 
-def find_n_max_pairs(df_corr: np.ndarray, n_max:int = 10) -> List[List]:
+
+def find_n_max_pairs(df_corr: np.ndarray, n_max: int = 10) -> List[List]:
     """
     Trouve les n_max paires avec le plus grand coefficient de corrélation
     sans prendre en compte la diagonale de 1.
@@ -64,31 +62,35 @@ def find_n_max_pairs(df_corr: np.ndarray, n_max:int = 10) -> List[List]:
     pairs_list = [[df_corr.index[a], df_corr.columns[b]] for a, b in zip(x, y)]
     return pairs_list
 
-def create_variable_to_trade(df_close: pd.DataFrame, pairs_list: List[List], method: str = "diff"):
-    """
 
-    :param df_close: Une DataFrame qui contient la série des prix "Adj Close"
+def create_variable_to_trade(
+    df_close: pd.DataFrame, pairs_list: List[List], method: str = "diff"
+) -> pd.DataFrame:
+    """
+    :param df_transform: pd.Dataframe. Contient la série des prix "Adj Close"
     au cours du temps.
     :param pairs_list: La liste des n plus grandes paires renvoyés par
     la fonction find_n_max_pairs
     :param method: str. Peut prendre la valeur "diff" par défaut pour faire
     la différence entre deux séries ou la valeur "div" pour faire la division.
-    :return:
+    :return: df_transform: pd.DataFrame. Renvoie la DataFrame de la série
+    transformé entre les paires de stocks.
     """
-    df_diff = pd.DataFrame()
+    df_transform = pd.DataFrame()
 
-    if method=="diff":
+    if method == "diff":
         for i in range(len(pairs_list)):
-            df_diff[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = \
+            df_transform[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = (
                 df_close[pairs_list[i][0]] - df_close[pairs_list[i][1]]
+            )
 
-    elif method=="div":
+    elif method == "div":
         for i in range(len(pairs_list)):
-            df_diff[f"{pairs_list[i][0]} / {pairs_list[i][1]}"] = \
+            df_transform[f"{pairs_list[i][0]} / {pairs_list[i][1]}"] = (
                 df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
+            )
 
     else:
         print("Invalid Method. Please try 'diff' or 'div'.")
 
-    return df_diff
-
+    return df_transform
