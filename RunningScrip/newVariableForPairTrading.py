@@ -11,7 +11,7 @@ from functions.dataTransformation import transformPricesToYield, find_n_max_pair
 # Hyperparametres
 
 
-def createModifiedVariableForPairTrading(rollingWindow: int = 60, numberOfPairsToTrade: int = 2) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def createModifiedVariableForPairTrading(rollingWindow: int = 60, numberOfPairsToTrade: int = 2, method='diff') -> Tuple[pd.DataFrame, pd.DataFrame]:
     # Étape 1 : Importer les prix des titres à analyser
     # prixTitresSP = get_sp_data()
     prixTitres = importDataFromYahoo(['AAPL', 'MSFT', 'META']).dropna(how='any')
@@ -38,7 +38,7 @@ def createModifiedVariableForPairTrading(rollingWindow: int = 60, numberOfPairsT
         # (A - B) ou (A / B)
         pricesAfterRollingWindow = prixTitres.loc[prixTitres.index > windowData.index[-1], :]
         windowToTrade = pricesAfterRollingWindow.index[:rollingWindow]
-        newVar = create_variable_to_trade(prixTitres, nPairs, method='alphaFactor')
+        newVar = create_variable_to_trade(prixTitres, nPairs, method=method)
 
         ####TODO: METTRE DANS UNE NOUVELLE FONCTION POUR QUE "run_strategy.py" SOIT LISIBLE, SINON C'EST LAID À CHIER À TERRE
         columnsToKeep = [True] * newVar.shape[1]
