@@ -13,7 +13,6 @@ def transformPricesToYield(
     yieldData = priceData / priceData.shift(yieldPeriod) - 1
     return yieldData.iloc[yieldPeriod:, :]
 
-
 def compute_correlation(df: pd.DataFrame, column: str = "Adj Close") -> pd.DataFrame:
     return df[column].corr()
 
