@@ -1,4 +1,5 @@
-from typing import Callable, List, Any
+from typing import Callable, List, Any, Tuple
+import talib
 
 import numpy as np
 import pandas as pd
@@ -29,16 +30,45 @@ def aroon(stockPrice: pd.Series, period: int = 25) -> List[Any]:
     return aroonIndicators['diff']
 
 
-def MACD(stockPrice: pd.Series) -> List[Any]:
-    pass
+def MACD(close: pd.Series,
+         fastperiod: int = 12,
+         slowperiod: int = 26,
+         signalperiod: int = 9) -> Tuple[pd.Series, pd.Series]:
+
+    macd, macdsignal, macdhist = talib.MACD(close=close,
+                                      fastperiod=fastperiod,
+                                      slowperiod=slowperiod,
+                                      signalperiod=signalperiod)
+
+    return macd, macdsignal
+
+def MOM(close: pd.Series, timeperiod: int = 10) -> pd.Series:
+
+    momentum = talib.MOM(close=close,
+                         timeperiod=timeperiod)
+
+    return momentum
 
 
-def RSI(stockPrice: pd.Series) -> List[Any]:
-    pass
+def RSI(close: pd.Series, timeperiod: int = 10) -> pd.Series:
+    rsi = talib.RSI(close=close, timeperiod=timeperiod)
+
+    return rsi
 
 
-def SMI(stockPrice: pd.Series) -> List[Any]:
-    pass
+def STOCHRSI(close: pd.Series,
+        timeperiod: int = 10,
+        fastk_period: int = 5,
+        fastd_period: int = 3,
+        fastd_matype: int = 0) -> Tuple[pd.Series, pd.Series]:
+
+    fastk, fastd = STOCHRSI(close=close,
+                            timeperiod=timeperiod,
+                            fastk_period=fastk_period,
+                            fastd_period=fastd_period,
+                            fastd_matype=fastd_matype)
+
+    return fastk, fastd
 
 
 def addNewIndicator(indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame) -> pd.DataFrame:
