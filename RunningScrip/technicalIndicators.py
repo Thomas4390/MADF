@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import talib
 
 from RunningScrip.newVariableForPairTrading import createModifiedVariableForPairTrading
 from functions.technicalIndicators import *
@@ -8,13 +7,15 @@ from functions.technicalIndicators import *
 newVariableDataFrame, newVariableToTradeDataFrame = createModifiedVariableForPairTrading(rollingWindow=250,
                                                                                          numberOfPairsToTrade=2,
                                                                                          method='alphaFactor')
-
+print(type(newVariableDataFrame[newVariableToTradeDataFrame.columns[0]]))
 # Création du dataframe pour les indicateurs techniques
 indicatorsDataFrame = pd.DataFrame(index=newVariableDataFrame.index)
 
 # Ajout des indicateurs techniques dans le dataframe pour indicateur.
 indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(aroon, 'aroon', newVariableDataFrame))
-indicatorsDataFrame = indicatorsDataFrame.join(MOM(newVariableDataFrame))
+#indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(MOM, 'MOM', newVariableDataFrame))
+mom = TRIX(newVariableDataFrame[newVariableToTradeDataFrame.columns[0]])
+print(mom.tail(20))
 # indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(ADX, 'ADX', newVariableDataFrame))
 # indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(MACD, 'MACD', newVariableDataFrame))
 # indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(RSI, 'RSI', newVariableDataFrame))

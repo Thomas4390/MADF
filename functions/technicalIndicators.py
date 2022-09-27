@@ -30,45 +30,182 @@ def aroon(stockPrice: pd.Series, period: int = 25) -> List[Any]:
     return aroonIndicators['diff']
 
 
-def MACD(close: pd.Series,
+def APO(close_price: pd.Series,
+        fastperiod: int = 12,
+        slowperiod: int = 26,
+        matype: int = 0) -> pd.Series:
+    """
+
+    :param close_price:
+    :param fastperiod:
+    :param slowperiod:
+    :param matype:
+    :return:
+    """
+
+    return talib.APO(close_price,
+                     fastperiod=fastperiod,
+                     slowperiod=slowperiod,
+                     matype=matype)
+
+def MACD(close_price: pd.Series,
          fastperiod: int = 12,
          slowperiod: int = 26,
-         signalperiod: int = 9) -> Tuple[pd.Series, pd.Series]:
+         signalperiod: int = 9,
+         select: str = "macd") -> pd.Series:
+    """
 
-    macd, macdsignal, macdhist = talib.MACD(close=close,
+    :param close_price:
+    :param fastperiod:
+    :param slowperiod:
+    :param signalperiod:
+    :param select:
+    :return:
+    """
+
+    macd, macdsignal, macdhist = talib.MACD(close_price,
                                       fastperiod=fastperiod,
                                       slowperiod=slowperiod,
                                       signalperiod=signalperiod)
+    if select == "macd":
+        return macd
 
-    return macd, macdsignal
-
-def MOM(close: pd.Series, timeperiod: int = 10) -> pd.Series:
-
-    momentum = talib.MOM(close=close,
-                         timeperiod=timeperiod)
-
-    return momentum
+    if select == "macdsignal":
+        return macdsignal
 
 
-def RSI(close: pd.Series, timeperiod: int = 10) -> pd.Series:
-    rsi = talib.RSI(close=close, timeperiod=timeperiod)
 
-    return rsi
+def MACDEXT(close_price: pd.Series,
+         fastperiod: int = 12,
+         fastmatype: int = 0,
+         slowperiod: int = 26,
+         slowmatype: int = 0,
+         signalperiod: int = 9,
+         signalmatype: int = 0,
+         select: str = "macd") -> pd.Series:
+    """
+
+    :param close_price:
+    :param fastperiod:
+    :param fastmatype:
+    :param slowperiod:
+    :param slowmatype:
+    :param signalperiod:
+    :param signalmatype:
+    :return:
+    """
+
+    macd, macdsignal, macdhist = talib.MACDEXT(close_price,
+                                      fastperiod=fastperiod,
+                                      fastmatype=fastmatype,
+                                      slowperiod=slowperiod,
+                                      slowmatype=slowmatype,
+                                      signalperiod=signalperiod,
+                                      signalmatype=signalmatype)
+
+    if select == "macd":
+        return macd
+
+    if select == "macdsignal":
+        return macdsignal
+
+def MACDFIX(close_price: pd.Series, signal_period: int = 9) -> pd.Series:
+
+    macd, macdsignal, macdhist = talib.MACDFIX(close_price,
+                                               signal_period=signal_period)
+
+    return macd
 
 
-def STOCHRSI(close: pd.Series,
+def CMO(close_price: pd.Series, time_period: int = 14):
+    """
+    Chande Momentum Oscillator
+    :param close_price:
+    :param time_period:
+    :return:
+    """
+
+    return talib.CMO(close_price, time_period=time_period)
+def MOM(close_price: pd.Series, timeperiod: int = 10) -> pd.Series:
+    """
+
+    :param close_price:
+    :param timeperiod:
+    :return:
+    """
+
+    return talib.MOM(close_price, timeperiod=timeperiod)
+
+def RSI(close_price: pd.Series, timeperiod: int = 14) -> pd.Series:
+
+    """
+
+    :param close_price:
+    :param timeperiod:
+    :return:
+    """
+    return talib.RSI(close_price, timeperiod=timeperiod)
+
+def TRIX(close_price: pd.Series, timeperiod: int = 30) -> pd.Series:
+
+    """
+
+    :param close_price:
+    :param timeperiod:
+    :return:
+    """
+    return talib.TRIX(close_price, timeperiod=timeperiod)
+
+
+def STOCHRSI(close_price: pd.Series,
         timeperiod: int = 10,
         fastk_period: int = 5,
         fastd_period: int = 3,
-        fastd_matype: int = 0) -> Tuple[pd.Series, pd.Series]:
+        fastd_matype: int = 0,
+        select: str = "fastk") -> pd.Series:
 
-    fastk, fastd = STOCHRSI(close=close,
+    """
+
+    :param close_price:
+    :param timeperiod:
+    :param fastk_period:
+    :param fastd_period:
+    :param fastd_matype:
+    :param select:
+    :return:
+    """
+
+    fastk, fastd = talib.STOCHRSI(close_price,
                             timeperiod=timeperiod,
                             fastk_period=fastk_period,
                             fastd_period=fastd_period,
                             fastd_matype=fastd_matype)
 
-    return fastk, fastd
+    if select == "fastk":
+        return fastk
+
+    if select == "fastd":
+        return fastd
+
+def PPO(close_price: pd.Series,
+        fastperiod: int = 12,
+        slowperiod: int = 26,
+        matype: int = 0) -> pd.Series:
+    """
+
+    :param close_price:
+    :param fastperiod:
+    :param slowperiod:
+    :param matype:
+    :return:
+    """
+
+    return talib.PPO(close_price,
+                     fastperiod=fastperiod,
+                     slowperiod=slowperiod,
+                     matype=matype)
+
+
 
 
 def addNewIndicator(indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame) -> pd.DataFrame:
