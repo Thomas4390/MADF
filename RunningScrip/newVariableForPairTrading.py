@@ -17,7 +17,7 @@ def createModifiedVariableForPairTrading(rollingWindow: int = 60, numberOfPairsT
     prixTitres = importDataFromYahoo(['AAPL', 'MSFT', 'META']).dropna(how='any')
     # prixTitres = pd.read_hdf('../data/sp_500_data.hdf')
 
-    # Étape 2 : Transformation des prix en rendement
+    # Étape 2 : Transformation des prix en rendement pour calculer la matrice de corrélation
     yieldTitresSP = transformPricesToYield(prixTitres)
 
     # Étape 3 : Pour que le modèle soit dynamique dans le temps (pas toujours les mêmes paires de titre que l'on transige),
@@ -38,9 +38,9 @@ def createModifiedVariableForPairTrading(rollingWindow: int = 60, numberOfPairsT
         # (A - B) ou (A / B)
         pricesAfterRollingWindow = prixTitres.loc[prixTitres.index > windowData.index[-1], :]
         windowToTrade = pricesAfterRollingWindow.index[:rollingWindow]
-        newVar = create_variable_to_trade(prixTitres, nPairs)
+        newVar = create_variable_to_trade(prixTitres, nPairs, method='alphaFactor')
 
-        #### METTRE DANS UNE NOUVELLE FONCTION POUR QUE "run_strategy.py" SOIT LISIBLE, SINON C'EST LAID À CHIER À TERRE
+        ####TODO: METTRE DANS UNE NOUVELLE FONCTION POUR QUE "run_strategy.py" SOIT LISIBLE, SINON C'EST LAID À CHIER À TERRE
         columnsToKeep = [True] * newVar.shape[1]
         newColumns = newVar.columns
         if not newVariableDataFrame.empty:
@@ -65,3 +65,5 @@ def createModifiedVariableForPairTrading(rollingWindow: int = 60, numberOfPairsT
     # Étape 8 : Ajouter les variables explicatives à un dataframe. Append au dataframe pour chaque nouvelle observation / window
 
     # Étape 9 : Création d'un modèle prédictif.
+
+

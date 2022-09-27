@@ -13,6 +13,7 @@ def transformPricesToYield(
     yieldData = priceData / priceData.shift(yieldPeriod) - 1
     return yieldData.iloc[yieldPeriod:, :]
 
+
 def compute_correlation(df: pd.DataFrame, column: str = "Adj Close") -> pd.DataFrame:
     return df[column].corr()
 
@@ -45,7 +46,7 @@ def create_variable_to_trade(
         df_close: pd.DataFrame, pairs_list: List[List], method: str = "diff"
 ) -> pd.DataFrame:
     """
-    :param df_transform: pd.Dataframe. Contient la série des prix "Adj Close"
+    :param df_close:  pd.Dataframe. Contient la série des prix "Adj Close"
     au cours du temps.
     :param pairs_list: La liste des n plus grandes paires renvoyés par
     la fonction find_n_max_pairs
@@ -67,6 +68,17 @@ def create_variable_to_trade(
             df_transform[f"{pairs_list[i][0]} / {pairs_list[i][1]}"] = (
                     df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
             )
+
+    elif method == 'alphaFactor':
+        for i in range(len(pairs_list)):
+            # alpha = np.array([np.nan] + list(df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]])[:-1])
+            lastPrice_0 = np.array([np.nan] + list(df_close[pairs_list[i][0]][:-1]))
+            lastPrice_1 = np.array([np.nan] + list(df_close[pairs_list[i][1]][:-1]))
+
+            df_transform[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = (
+                    (df_close[pairs_list[i][0]] / lastPrice_0 - df_close[pairs_list[i][1]] / lastPrice_1) + 1
+            ).cumprod(axis=0) - 1
+            df_transform.iloc[0, :] = 0
 
     else:
         print("Invalid Method. Please try 'diff' or 'div'.")
