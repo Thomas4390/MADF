@@ -15,7 +15,7 @@ from functions.dataTransformation import (
 
 
 def createModifiedVariableForPairTrading(
-    rollingWindow: int = 60, numberOfPairsToTrade: int = 2, method="diff"
+    rollingWindow: int = 60, numberOfPairsToTrade: int = 2, method="norm"
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     # Étape 1 : Importer les prix des titres à analyser
     # prixTitres = importDataFromYahoo(["AAPL", "MSFT", "META"]).dropna(how="any")
@@ -63,6 +63,7 @@ def createModifiedVariableForPairTrading(
             )
         else: # Si c'est la première variable (paire), on garde toute les paires qui on une corrélation maximale.
             columnsToKeep = [True] * len(nPairs)
+
         variableToKeep = [nPairs[i] for i, x in enumerate(columnsToKeep) if x] # Permet d'avoir une liste des paires déja calculé
         variableAlreadyCalculated += variableToKeep
         newVar = create_variable_to_trade(prixTitres, variableToKeep, method=method) # Création des nouvelles paires/variables

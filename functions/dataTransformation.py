@@ -58,7 +58,7 @@ def find_n_max_pairs(df_corr: pd.DataFrame, n_max: int = 10) -> List[List]:
 
 
 def create_variable_to_trade(
-    df_close: pd.DataFrame, pairs_list: List[List], method: str = "alphaFactor"
+    df_close: pd.DataFrame, pairs_list: List[List], method: str = "norm"
 ) -> pd.DataFrame:
     """
     :param df_close:  pd.Dataframe. Contient la série des prix "Adj Close"
@@ -84,7 +84,7 @@ def create_variable_to_trade(
                 df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
             )
 
-    elif method == "alphaFactor":
+    elif method == "norm":
         for i in range(len(pairs_list)):
             # alpha = np.array([np.nan] + list(df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]])[:-1])
             lastPrice_0 = np.array([np.nan] + list(df_close[pairs_list[i][0]][:-1]))
@@ -100,7 +100,7 @@ def create_variable_to_trade(
             df_transform.iloc[0, :] = 0
 
     else:
-        print("Invalid Method. Please try 'diff', 'div' or 'alphaFactor'.")
+        print("Invalid Method. Please try 'diff', 'div' or 'norm'.")
 
     return df_transform
 

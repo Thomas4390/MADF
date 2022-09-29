@@ -31,7 +31,7 @@ def download_sp_data(start: str = "2005-01-01", end: str = "2022-08-01") -> pd.D
         print("Failed download, try again.")
         data = None
 
-def read_sp_data() -> pd.DataFrame:
+def read_sp_data(column_to_keep: str = "Adj Close") -> pd.DataFrame:
     """
 
     :return:
@@ -40,11 +40,9 @@ def read_sp_data() -> pd.DataFrame:
 
     # df modifiée seulement pour faire des tests
     # On prend les 10 premières colonnes
-    df_mod = df["Adj Close"][df["Adj Close"].columns[0:5]]
+    df_mod = df[column_to_keep]
 
     return df_mod
 
 
 
-if __name__ == "__main__":
-    print(read_sp_data().head())
