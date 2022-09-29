@@ -86,6 +86,9 @@ def MACD(
         return MACD.macd_signal()
 
 
+
+
+
 def MACDEXT(
     close_price: pd.Series,
     fastperiod: int = 12,
@@ -143,7 +146,7 @@ def MACDEXT(
 #        return macdsignal
 
 
-def CMO(close_price: pd.Series, time_period: int = 14):
+def CMO(close_price: pd.Series, timeperiod: int = 14):
     """
     Chande Momentum Oscillator
     :param close_price:
@@ -151,7 +154,7 @@ def CMO(close_price: pd.Series, time_period: int = 14):
     :return:
     """
 
-    return talib.CMO(close_price, time_period=time_period)
+    return talib.CMO(close_price, timeperiod=timeperiod)
 
 
 def MOM(close_price: pd.Series, timeperiod: int = 10) -> pd.Series:
@@ -245,6 +248,6 @@ def addNewIndicator(
     indicatorDataFrame = priceDataFrame.apply(indicatorFunction, axis=0)
     name = indicatorName
     indicatorDataFrame.columns = map(
-        lambda x: name + " | " + x, indicatorDataFrame.columns
+        lambda x: name + "|" + x, indicatorDataFrame.columns
     )
     return indicatorDataFrame

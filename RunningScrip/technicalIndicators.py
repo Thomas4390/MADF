@@ -6,14 +6,14 @@ from typing import Callable, Dict, List, Tuple
 
 indicators = {
     "AROON": AROON,
-    "APO": APO,
-    "MACD": MACD,
-    "MACDEXT": MACDEXT,
-    "MOM": MOM,
-    "PPO": PPO,
-    "RSI": RSI,
-    "STOCHRSI": STOCHRSI,
-    "TRIX": TRIX
+    #"APO": APO,
+    "MACD": MACD
+    #"MACDEXT": MACDEXT,
+    #"MOM": MOM,
+    #"PPO": PPO,
+    #"RSI": RSI,
+    #"STOCHRSI": STOCHRSI,
+    #"TRIX": TRIX
 }
 
 def getData(
@@ -78,4 +78,6 @@ def getData(
 newVariableDataFrame, newVariableToTradeDataFrame, indicatorsDataFrame = getData(indicators=indicators)
 
 if __name__ == "__main__":
-    getData()
+    getData(indicators=indicators)
+
+

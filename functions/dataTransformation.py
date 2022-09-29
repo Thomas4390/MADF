@@ -47,6 +47,7 @@ def find_n_max_pairs(df_corr: pd.DataFrame, n_max: int = 10) -> List[List]:
     # On remplit la diagonale de 0
     df_corr_np = np.tril([1] * df_corr_np.shape[0], -1) * df_corr_np
 
+
     x, y = np.unravel_index(np.argsort(df_corr_np, axis=None), df_corr_np.shape)
 
     pairs_list = [
@@ -73,13 +74,13 @@ def create_variable_to_trade(
 
     if method == "diff":
         for i in range(len(pairs_list)):
-            df_transform[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = (
+            df_transform[f"{pairs_list[i][0]}-{pairs_list[i][1]}"] = (
                 df_close[pairs_list[i][0]] - df_close[pairs_list[i][1]]
             )
 
     elif method == "div":
         for i in range(len(pairs_list)):
-            df_transform[f"{pairs_list[i][0]} / {pairs_list[i][1]}"] = (
+            df_transform[f"{pairs_list[i][0]}-{pairs_list[i][1]}"] = (
                 df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
             )
 
@@ -89,7 +90,7 @@ def create_variable_to_trade(
             lastPrice_0 = np.array([np.nan] + list(df_close[pairs_list[i][0]][:-1]))
             lastPrice_1 = np.array([np.nan] + list(df_close[pairs_list[i][1]][:-1]))
 
-            df_transform[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = (
+            df_transform[f"{pairs_list[i][0]}-{pairs_list[i][1]}"] = (
                 (
                     df_close[pairs_list[i][0]] / lastPrice_0
                     - df_close[pairs_list[i][1]] / lastPrice_1
