@@ -10,7 +10,7 @@ def ADX(stockPrice: pd.Series) -> List[Any]:
     pass
 
 
-def aroon(stockPrice: pd.Series, period: int = 25) -> List[Any]:
+def AROON(stockPrice: pd.Series, period: int = 25) -> List[Any]:
     aroonIndicators = {'up': [np.nan] * period,
                        'down': [np.nan] * period,
                        'diff': [np.nan] * period,
