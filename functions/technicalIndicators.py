@@ -2,15 +2,17 @@ from typing import Callable, List, Any, Tuple
 import ta
 import numpy as np
 import pandas as pd
-from functions.importationTitres import read_sp_data
 
 
-# Les indicateurs retournés à chaque
-
-
-def ADX(stockPrice: pd.Series) -> List[Any]:
-    pass
-
+def addNewIndicator(
+    indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame
+) -> pd.DataFrame:
+    indicatorDataFrame = priceDataFrame.apply(indicatorFunction, axis=0)
+    name = indicatorName
+    indicatorDataFrame.columns = map(
+        lambda x: name + "|" + x, indicatorDataFrame.columns
+    )
+    return indicatorDataFrame
 
 def AROON(close: pd.Series, period: int = 25) -> List[Any]:
     aroonIndicators = {
@@ -340,14 +342,6 @@ def TRIX(close: pd.Series, window: int = 15) -> pd.Series:
     return trix
 
 
-def addNewIndicator(
-    indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame
-) -> pd.DataFrame:
-    indicatorDataFrame = priceDataFrame.apply(indicatorFunction, axis=0)
-    name = indicatorName
-    indicatorDataFrame.columns = map(
-        lambda x: name + "|" + x, indicatorDataFrame.columns
-    )
-    return indicatorDataFrame
+
 
 
