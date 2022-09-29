@@ -1,40 +1,56 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-
 from RunningScrip.newVariableForPairTrading import createModifiedVariableForPairTrading
 from functions.technicalIndicators import *
-# Importation des variables transformées
-newVariableDataFrame, newVariableToTradeDataFrame = createModifiedVariableForPairTrading(rollingWindow=250,
-                                                                                         numberOfPairsToTrade=2,
-                                                                                         method='alphaFactor')
-print(type(newVariableDataFrame[newVariableToTradeDataFrame.columns[0]]))
-# Création du dataframe pour les indicateurs techniques
-indicatorsDataFrame = pd.DataFrame(index=newVariableDataFrame.index)
+from typing import Callable, Dict, List, Tuple
 
-# Ajout des indicateurs techniques dans le dataframe pour indicateur.
-indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(aroon, 'aroon', newVariableDataFrame))
-#indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(MOM, 'MOM', newVariableDataFrame))
-# indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(ADX, 'ADX', newVariableDataFrame))
-# indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(MACD, 'MACD', newVariableDataFrame))
-# indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(RSI, 'RSI', newVariableDataFrame))
-# indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(SMI, 'SMI', newVariableDataFrame))
+indicators = {
+    "AROON": AROON,
+    "APO": APO,
+    "MACD": MACD,
+    "MACDEXT": MACDEXT,
+    "MOM": MOM,
+    "PPO": PPO,
+    "RSI": RSI,
+    "STOCHRSI": STOCHRSI,
+    "TRIX": TRIX
+}
 
+def getData(
+    rollingWindow: int = 60,
+    numberOfPairsToTrade: int = 2,
+    method: str = "alphaFactor",
+    indicators: Dict[str, Callable] = {"MACD": MACD}
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """
 
-from RunningScrip.newVariableForPairTrading import createModifiedVariableForPairTrading
-from functions.technicalIndicatorsFunctions import *
-
-def getData(rollingWindow: int = 60, numberOfPairsToTrade: int = 2, method: str = 'alphaFactor'):
-    # Importation des variables transformées
-    newVariableDataFrame, newVariableToTradeDataFrame = createModifiedVariableForPairTrading(
+    :param rollingWindow:
+    :param numberOfPairsToTrade:
+    :param method:
+    :param indicators: Dictionnaire des indicateurs à fournir
+    :return:
+    """
+    (
+        newVariableDataFrame,
+        newVariableToTradeDataFrame,
+    ) = createModifiedVariableForPairTrading(
         rollingWindow=rollingWindow,
         numberOfPairsToTrade=numberOfPairsToTrade,
-        method=method)
+        method=method,
+    )
 
     # Création du dataframe pour les indicateurs techniques
     indicatorsDataFrame = pd.DataFrame(index=newVariableDataFrame.index)
 
     # Ajout des indicateurs techniques dans le dataframe pour indicateur.
-    indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(aroon, 'aroon', newVariableDataFrame))
+    #TODO : Calculer les indicateurs dans une autre DataFrame.
+    # Il est ensuite possible de concat les deux dataFrame en une seule étape.
+    for key, value in indicators.items():
+        indicatorsDataFrame = indicatorsDataFrame.join(
+            addNewIndicator(value, key, newVariableDataFrame)
+        )
+
+
     # indicatorsDataFrame = indicatorsDataFrame.join(MOM(newVariableDataFrame))
     # indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(ADX, 'ADX', newVariableDataFrame))
     # indicatorsDataFrame = indicatorsDataFrame.join(addNewIndicator(MACD, 'MACD', newVariableDataFrame))
@@ -57,3 +73,6 @@ def getData(rollingWindow: int = 60, numberOfPairsToTrade: int = 2, method: str 
     #
     # plt.show()
     return newVariableDataFrame, newVariableToTradeDataFrame, indicatorsDataFrame
+
+
+newVariableDataFrame, newVariableToTradeDataFrame, indicatorsDataFrame = getData(indicators=indicators)

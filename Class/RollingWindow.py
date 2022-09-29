@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Literal, Iterator, Dict
+from typing import Optional, Tuple, Iterator, Dict
 
 import pandas as pd
 
@@ -22,7 +22,7 @@ class MyRollingWindow(Iterator):
 
         self.i += 1
 
-        return self.df.iloc[fromIdx: toIdx, :]
+        return self.df.iloc[fromIdx:toIdx, :]
 
 
 class RollingDataSet:

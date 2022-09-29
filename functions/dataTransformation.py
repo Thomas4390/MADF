@@ -1,21 +1,33 @@
 import numpy as np
 import pandas as pd
 
+from functions.importationTitres import read_sp_data
 from Class.RollingWindow import MyRollingWindow
-from functions.importationTitres import get_sp_data
+from functions.importationTitres import download_sp_data
 from collections.abc import Iterator
 from typing import List
 
 
 def transformPricesToYield(
-        priceData: pd.DataFrame, yieldPeriod: int = 1
+    df_close: pd.DataFrame, yieldPeriod: int = 1
 ) -> pd.DataFrame:
-    yieldData = priceData / priceData.shift(yieldPeriod) - 1
+    """
+
+    :param df_close:
+    :param yieldPeriod:
+    :return:
+    """
+    yieldData = df_close / df_close.shift(yieldPeriod) - 1
     return yieldData.iloc[yieldPeriod:, :]
 
 
-def compute_correlation(df: pd.DataFrame, column: str = "Adj Close") -> pd.DataFrame:
-    return df[column].corr()
+def compute_correlation(df: pd.DataFrame) -> pd.DataFrame:
+    """
+
+    :param df:
+    :return:
+    """
+    return df.corr()
 
 
 def find_n_max_pairs(df_corr: pd.DataFrame, n_max: int = 10) -> List[List]:
@@ -37,13 +49,15 @@ def find_n_max_pairs(df_corr: pd.DataFrame, n_max: int = 10) -> List[List]:
 
     x, y = np.unravel_index(np.argsort(df_corr_np, axis=None), df_corr_np.shape)
 
-    pairs_list = [[df_corr.index[a], df_corr.columns[b]] for a, b in zip(x[-n_max:], y[-n_max:])]
+    pairs_list = [
+        [df_corr.index[a], df_corr.columns[b]] for a, b in zip(x[-n_max:], y[-n_max:])
+    ][::-1]
 
     return pairs_list
 
 
 def create_variable_to_trade(
-        df_close: pd.DataFrame, pairs_list: List[List], method: str = "diff"
+    df_close: pd.DataFrame, pairs_list: List[List], method: str = "alphaFactor"
 ) -> pd.DataFrame:
     """
     :param df_close:  pd.Dataframe. Contient la série des prix "Adj Close"
@@ -60,27 +74,37 @@ def create_variable_to_trade(
     if method == "diff":
         for i in range(len(pairs_list)):
             df_transform[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = (
-                    df_close[pairs_list[i][0]] - df_close[pairs_list[i][1]]
+                df_close[pairs_list[i][0]] - df_close[pairs_list[i][1]]
             )
 
     elif method == "div":
         for i in range(len(pairs_list)):
             df_transform[f"{pairs_list[i][0]} / {pairs_list[i][1]}"] = (
-                    df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
+                df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]]
             )
 
-    elif method == 'alphaFactor':
+    elif method == "alphaFactor":
         for i in range(len(pairs_list)):
             # alpha = np.array([np.nan] + list(df_close[pairs_list[i][0]] / df_close[pairs_list[i][1]])[:-1])
             lastPrice_0 = np.array([np.nan] + list(df_close[pairs_list[i][0]][:-1]))
             lastPrice_1 = np.array([np.nan] + list(df_close[pairs_list[i][1]][:-1]))
 
             df_transform[f"{pairs_list[i][0]} - {pairs_list[i][1]}"] = (
-                    (df_close[pairs_list[i][0]] / lastPrice_0 - df_close[pairs_list[i][1]] / lastPrice_1) + 1
+                (
+                    df_close[pairs_list[i][0]] / lastPrice_0
+                    - df_close[pairs_list[i][1]] / lastPrice_1
+                )
+                + 1
             ).cumprod(axis=0) - 1
             df_transform.iloc[0, :] = 0
 
     else:
-        print("Invalid Method. Please try 'diff' or 'div'.")
+        print("Invalid Method. Please try 'diff', 'div' or 'alphaFactor'.")
 
     return df_transform
+
+if __name__ == "__main__":
+
+
+
+
