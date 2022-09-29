@@ -41,8 +41,8 @@ def SMI(stockPrice: pd.Series) -> List[Any]:
     pass
 
 
-def addNewIndicator(indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame) -> pd.DataFrame:
-    indicatorDataFrame = priceDataFrame.apply(indicatorFunction, axis=0)
+def addNewIndicator(indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame, **kwargs) -> pd.DataFrame:
+    indicatorDataFrame = priceDataFrame.apply(indicatorFunction, axis=0, **kwargs)
     name = indicatorName
-    indicatorDataFrame.columns = map(lambda x: name + '-' + x, indicatorDataFrame.columns)
+    indicatorDataFrame.columns = map(lambda x: name + '_' + x, indicatorDataFrame.columns)
     return indicatorDataFrame
