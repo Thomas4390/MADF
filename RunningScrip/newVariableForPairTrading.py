@@ -31,6 +31,7 @@ def createModifiedVariableForPairTrading(
     rollingWindowData = MyRollingWindow(yieldTitresSP, window=rollingWindow)
     newVariableDataFrame = pd.DataFrame(index=prixTitres.index)
     newVariableToTradeDataFrame = pd.DataFrame(index=prixTitres.index)
+    variableAlreadyCalculated = []
     for windowData in rollingWindowData:
 
         # Étape 4 : Analyse de la dépendance (covariance) à chaque période.
@@ -46,20 +47,30 @@ def createModifiedVariableForPairTrading(
             prixTitres.index > windowData.index[-1], :
         ]
         windowToTrade = pricesAfterRollingWindow.index[:rollingWindow]
-        newVar = create_variable_to_trade(prixTitres, nPairs, method=method)
+        if not newVariableDataFrame.empty:
+            columnsToKeep = list(
+                map(lambda x: x not in variableAlreadyCalculated, nPairs)
+            )
+        else:
+            columnsToKeep = [True] * len(nPairs)
+        variableToKeep = [nPairs[i] for i, x in enumerate(columnsToKeep) if x]
+        variableAlreadyCalculated.append(variableToKeep)
+        newVar = create_variable_to_trade(prixTitres, variableToKeep, method=method)
 
         #TODO: METTRE DANS UNE NOUVELLE FONCTION POUR QUE "run_strategy.py" SOIT LISIBLE, SINON C'EST LAID À CHIER À TERRE
         columnsToKeep = [True] * newVar.shape[1]
         newColumns = newVar.columns
-        if not newVariableDataFrame.empty:
-            columnsToKeep = list(
-                map(lambda x: x not in newVariableDataFrame.columns, newColumns)
-            )
+        # if not newVariableDataFrame.empty:
+        #     columnsToKeep = list(
+        #         map(lambda x: x not in newVariableDataFrame.columns, newColumns)
+        #     )
 
         for newcol in newColumns[columnsToKeep]:
             newVariableToTradeDataFrame[newcol] = np.nan
 
-        newVariableDataFrame = newVariableDataFrame.join(newVar.loc[:, columnsToKeep])
+        # newVariableDataFrame = newVariableDataFrame.join(newVar.loc[:, columnsToKeep])
+        newVariableDataFrame = newVariableDataFrame.join(
+            newVar)
 
         # newVarNextWindow = newVar.iloc[:rollingWindow, :]
         # newVariableToTradeDataFrame.loc[newVarNextWindow.index, newColumns] = 1

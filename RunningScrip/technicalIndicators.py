@@ -76,3 +76,6 @@ def getData(
 
 
 newVariableDataFrame, newVariableToTradeDataFrame, indicatorsDataFrame = getData(indicators=indicators)
+
+if __name__ == "__main__":
+    getData()

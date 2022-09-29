@@ -105,6 +105,4 @@ def create_variable_to_trade(
 
 if __name__ == "__main__":
 
-
-
-
+    pass
