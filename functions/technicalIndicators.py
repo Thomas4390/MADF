@@ -1,6 +1,5 @@
 from typing import Callable, List, Any, Tuple
-import talib
-
+import ta
 import numpy as np
 import pandas as pd
 
@@ -58,32 +57,33 @@ def APO(
 
 def MACD(
     close_price: pd.Series,
-    fastperiod: int = 12,
-    slowperiod: int = 26,
-    signalperiod: int = 9,
+    window_fast: int = 12,
+    window_slow: int = 26,
+    window_sign: int = 9,
     select: str = "macd",
 ) -> pd.Series:
     """
 
     :param close_price:
-    :param fastperiod:
-    :param slowperiod:
-    :param signalperiod:
+    :param window_fast:
+    :param window_slow:
+    :param window_sign:
     :param select:
     :return:
     """
 
-    macd, macdsignal, macdhist = talib.MACD(
+    MACD = ta.trend.MACD(
         close_price,
-        fastperiod=fastperiod,
-        slowperiod=slowperiod,
-        signalperiod=signalperiod,
+        window_fast=window_fast,
+        window_slow=window_slow,
+        window_sign=window_sign,
     )
+
     if select == "macd":
-        return macd
+        return MACD.macd()
 
     if select == "macdsignal":
-        return macdsignal
+        return MACD.macd_signal()
 
 
 def MACDEXT(
