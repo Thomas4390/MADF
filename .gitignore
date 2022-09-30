@@ -2,3 +2,4 @@
 .env
 layers.algo_trading.png
 __pycache__/
+.idea/
