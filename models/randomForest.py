@@ -3,7 +3,7 @@ from sklearn.model_selection import TimeSeriesSplit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
-from RunningScrip.technicalIndicators import getData
+from RunningScrip.RollingData import getData
 
 # On fait de la classification avec random forest.
 # La variable réponse est 1 si la valeur réponse est supérieur à zéro et est zéro autrement.
