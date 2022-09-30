@@ -1,0 +1,4 @@
+.DS_Store
+.env
+layers.algo_trading.png
+__pycache__/
