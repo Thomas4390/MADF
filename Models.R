@@ -6,6 +6,8 @@ library(caret)
 library(randomForest)
 library(MASS)
 library(ggplot2)
+library(pROC)
+
 
 # Importation des données
 indicators <- read.csv(paste0('data/indicatorsDataFrame', window, '_', numberPairs, '.csv'))
@@ -15,6 +17,7 @@ pairsToTrade <- read.csv(paste0('data/newVariableToTradeDataFrame', window, '_',
 
 
 # Creation d'une base de donnees fake
+set.seed(1)
 n <- 10000
 x1 <- runif(n, min=-5, max= 3)
 x2 <- rnorm(n, 1, 3)
@@ -45,9 +48,7 @@ rm(x1, x2, x3, y, nonLinear, n)
 ## Fin de la création des données
 
 
-### Régression
-
-
+### REGRESSION
 # Interaction entre tout nos prédicteurs
 trainXmat <- model.matrix(y ~ .^2, data = trainData)
 testXmat <- model.matrix(y ~ .^2, data = testData)
@@ -188,5 +189,159 @@ ggplot(data.frame('pred'=finalPred,
   ylab('y')
   
 
+### CLASSIFICATION
+# Interaction entre tout nos prédicteurs
+trainData$y <- ifelse(trainData$y > 0, 1, 0)
+testData$y <- ifelse(testData$y > 0, 1, 0)
 
+
+trainXmat <- model.matrix(y ~ .^2, data = trainData)
+testXmat <- model.matrix(y ~ .^2, data = testData)
+
+## glm binomial AIC
+set.seed(161)
+AIC.mod2 <- glm(y ~ .^2, family='binomial', data=trainData)
+
+AIC.mod2 <- stepAIC(AIC.mod2, k=2, direction='backward', trace=FALSE)
+
+
+# Calcul du AUC
+testPred.AIC <- as.vector(predict(AIC.mod2, newdata = testData, type = "response"))
+testAUC.AIC <- roc(testData$y ~ testPred.AIC)
+trainAUC.AIC <- roc(trainData$y ~ as.vector(predict(AIC.mod2, newdata = trainData, type = "response")))
+
+print(c(paste0('AIC AUC train: ', trainAUC.AIC$auc), paste('AIC AUC test:', testAUC.AIC$auc)))
+
+## Lasso Model
+set.seed(161)
+cv <- cv.glmnet(x      = trainXmat,
+                y      = trainData$y,
+                family = "binomial",
+                alpha  = 1,
+                nfolds = 5) # cross validation
+plot(cv)
+
+las.mod2 <- glmnet(x      = trainXmat,
+                   y      = trainData$y,
+                   family = "binomial",
+                   lambda = cv$lambda.1se,
+                   alpha  = 1) # Création du modèle avec meilleur lambda
+
+
+coef.glmnet(las.mod2)  # Coefficient de régression Lasso
+
+# Calcul du AUC
+testPred.lasso <- as.vector(predict(las.mod2, newx = testXmat, type = "response"))
+testAUC.lasso <- roc(testData$y ~ testPred.lasso)
+trainAUC.lasso <- roc(trainData$y ~ as.vector(predict(las.mod2, newx = trainXmat, type = "response")))
+
+
+print(c(paste0('Lasso AUC train: ', trainAUC.lasso$auc), paste('Lasso AUC test:', testAUC.lasso$auc)))
+
+## Ridge Model
+set.seed(161)
+cv <- cv.glmnet(x      = trainXmat,
+                y      = trainData$y,
+                family = "binomial",
+                alpha  = 0,
+                nfolds = 5) # cross validation
+plot(cv)
+
+ridge.mod2 <- glmnet(x      = trainXmat,
+                     y      = trainData$y,
+                     family = "binomial",
+                     lambda = cv$lambda.1se,
+                     alpha  = 0) # Création du modèle avec meilleur lambda
+
+
+coef.glmnet(ridge.mod2)  # Coefficient de régression Lasso
+
+# Calcul du AUC
+testPred.ridge <- as.vector(predict(ridge.mod2, newx = testXmat, type = "response"))
+testAUC.ridge <- roc(testData$y ~ testPred.ridge)
+trainAUC.ridge <- roc(trainData$y ~ as.vector(predict(ridge.mod2, newx = trainXmat, type = "response")))
+
+print(c(paste0('Ridge AUC train: ', trainAUC.ridge$auc), paste('Ridge AUC test:', testAUC.ridge$auc)))
+
+## Elastic Net Model, alpha=0.5
+set.seed(161)
+cv <- cv.glmnet(x      = trainXmat,
+                y      = trainData$y,
+                family = "binomial",
+                alpha  = 0.5,
+                nfolds = 5) # cross validation
+plot(cv)
+
+elastic.mod2 <- glmnet(x      = trainXmat,
+                       y      = trainData$y,
+                       family = "binomial",
+                       lambda = cv$lambda.1se,
+                       alpha  = 0.5) # Création du modèle avec meilleur lambda
+
+
+coef.glmnet(elastic.mod2)  # Coefficient de régression Lasso
+
+# Calcul du AUC 
+testPred.elastic <- as.vector(predict(elastic.mod2, newx = testXmat, type = "response"))
+testAUC.elastic <- roc(testData$y ~ testPred.elastic)
+trainAUC.elastic <- roc(trainData$y ~ as.vector(predict(elastic.mod2, newx = trainXmat, type = "response")))
+
+print(c(paste0('Elastic Net AUC train: ', trainAUC.elastic$auc), paste('Elastic Net AUC test:', testAUC.elastic$auc)))
+
+## Random Forest Model
+set.seed(161)
+trainYN <- trainData
+testYN <- testData
+
+trainYN$y <- ifelse(trainYN$y == 1, "Y", "N")
+testYN$y <- ifelse(testYN$y == 1, "Y", "N")
+
+rf.mod2 <- train(y          = trainYN$y,
+                 x          = trainYN[, colnames(trainYN) != "y"],
+                 method     = "rf", # random forest
+                 trControl  = trainControl(method          = "cv", # Cross Validation
+                                           number          = 5,
+                                           summaryFunction = twoClassSummary,
+                                           classProbs = TRUE),
+                 metric     = "ROC",
+                 tuneGrid   = expand.grid(mtry = c(2, 3)),
+                 ntree      = 300,
+                 importance = T)
+
+
+rf.mod2
+plot(rf.mod2) # Plot le tune Grid
+plot(rf.mod2$finalModel) # plot le nombre d'arbres
+
+# Calcul du AUC
+testPred.rf <- as.vector(predict(rf.mod2, newdata = testYN, type = "prob"))$Y
+testAUC.rf <- roc(testData$y ~ testPred.rf)
+trainAUC.rf <- roc(trainData$y ~ as.vector(predict(rf.mod2, newdata = trainYN, type = "prob")$Y))
+
+print(c(paste0('Random Forest AUC train: ', trainAUC.rf$auc), paste('Random Forest AUC test:', testAUC.rf$auc)))
+
+# Comparaison des modèles de classification
+modelComparison <- data.frame("Model"=c("AIC", "Lasso", "Ridge", "Elastic Net", "Random Forest"),
+                              "Train AUC" = c(trainAUC.AIC$auc, trainAUC.lasso$auc, trainAUC.ridge$auc, trainAUC.elastic$auc, trainAUC.rf$auc),
+                              "Test AUC" = c(testAUC.AIC$auc, testAUC.lasso$auc, testAUC.ridge$auc, testAUC.elastic$auc, testAUC.rf$auc))
+print(modelComparison)
+
+chosenModel <- modelComparison$Model[which.max(modelComparison$Test.AUC)]
+print(paste('Chosen model:', chosenModel))
+
+finalModel <- list(AIC.mod2, las.mod2, ridge.mod2, elastic.mod2, rf.mod2)
+finalPred <- list(testPred.AIC, testPred.lasso, testPred.ridge, testPred.elastic, testPred.rf)
+
+finalModel <- finalModel[[which.min(modelComparison$Test.AUC)]]
+finalPred <- finalPred[[which.min(modelComparison$Test.AUC)]]
+
+#### CHOISIR LE THRESHOLD
+threshold <- 0.5
+thresholdPred <- ifelse(finalPred>threshold, 'Y', 'N')
+confMatrix <- confusionMatrix(data = factor(thresholdPred), reference = factor(testYN$y), positive = "Y")
+confMatrix$table
+
+plot(list(testAUC.AIC, testAUC.lasso, testAUC.ridge, testAUC.elastic, testAUC.rf)[[which.min(modelComparison$Test.AUC)]],
+     main=paste(paste('Test data ROC for', chosenModel), 'model'))
+text(0.4, 0.4, labels=paste('Test AUC:', round(modelComparison$Test.AUC[which.min(modelComparison$Test.AUC)], 4)))
 
