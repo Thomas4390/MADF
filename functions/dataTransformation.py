@@ -30,7 +30,7 @@ def compute_correlation(df: pd.DataFrame) -> pd.DataFrame:
     return df.corr()
 
 
-def find_n_max_pairs(df_corr: pd.DataFrame, n_max: int = 10) -> List[List]:
+def find_n_max_pairs(df_corr: pd.DataFrame, n_max: int = 5) -> List[List]:
     """
     Trouve les n_max paires avec le plus grand coefficient de corrélation
     sans prendre en compte la diagonale de 1.
@@ -96,14 +96,26 @@ def create_variable_to_trade(
                     - df_close[pairs_list[i][1]] / lastPrice_1
                 )
                 + 1
-            ).cumprod(axis=0) - 1
-            df_transform.iloc[0, :] = 0
+            ).cumprod(axis=0)
+            df_transform.iloc[0, :] = np.nan
 
     else:
         print("Invalid Method. Please try 'diff', 'div' or 'norm'.")
 
     return df_transform
+def stack_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    :param df: pd.DataFrame. DataFrame à transformer
+    :return: df_stack: pd.DataFrame. DataFrame
 
-if __name__ == "__main__":
+    """
+    df_stack = df.stack().reset_index()
+    # Nom des colonnes
+    df_stack.columns = ["Date", "Paire", "Prix"]
+    # Grouper les données par nom de titre dans le multi index
+    df_stack = df_stack.groupby("Paire").apply(lambda x: x.set_index(["Date"]))
+    # Supprimer le multi index
+    df_stack = df_stack.droplevel(0)
 
-    pass
+    return df_stack
+

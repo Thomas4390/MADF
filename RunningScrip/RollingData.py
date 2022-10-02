@@ -48,27 +48,16 @@ def getData(
     )
 
     # Création du dataframe pour les indicateurs techniques
-    indicatorsDataFrame = pd.DataFrame(index=newVariableDataFrame.index)
-
-    # Ajout des indicateurs techniques dans le dataframe pour indicateur.
-    for key, value in indicators.items():
-        indicatorsDataFrame = indicatorsDataFrame.join(
-            addNewIndicator(value, key, newVariableDataFrame)
-        )
+    df_indicators = AddingNewIndicators(newVariableDataFrame, indicators)
 
     if save_to_pickle:
         newVariableDataFrame.to_pickle(
             f"../data/newVariableDataFrame{rollingWindow}_{numberOfPairsToTrade}.pkl")
         newVariableToTradeDataFrame.to_pickle(
             f"../data/newVariableToTradeDataFrame{rollingWindow}_{numberOfPairsToTrade}.pkl")
-        indicatorsDataFrame.to_pickle(f"../data/indicatorsDataFrame{rollingWindow}_{numberOfPairsToTrade}.pkl")
+        df_indicators.to_pickle(f"../data/indicatorsDataFrame{rollingWindow}_{numberOfPairsToTrade}.pkl")
 
 
-    return newVariableDataFrame, newVariableToTradeDataFrame, indicatorsDataFrame
-
-
-newVariableDataFrame, newVariableToTradeDataFrame, indicatorsDataFrame = getData(indicators=indicators)
-
-getData(indicators=indicators, save_to_pickle=True)
+    return newVariableDataFrame, newVariableToTradeDataFrame, df_indicators
 
 

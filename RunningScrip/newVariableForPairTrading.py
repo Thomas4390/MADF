@@ -10,6 +10,9 @@ from functions.dataTransformation import (
     create_variable_to_trade,
 )
 
+from functions.dataTransformation import stack_columns
+
+
 
 # Hyperparametres
 

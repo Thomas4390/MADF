@@ -2,17 +2,80 @@ from typing import Callable, List, Any, Tuple
 import ta
 import numpy as np
 import pandas as pd
+from functions.dataTransformation import stack_columns
+from typing import Callable, List, Any, Tuple, Dict
 
 
-def addNewIndicator(
-    indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame
-) -> pd.DataFrame:
-    indicatorDataFrame = priceDataFrame.apply(indicatorFunction, axis=0)
-    name = indicatorName
-    indicatorDataFrame.columns = map(
-        lambda x: name + "|" + x, indicatorDataFrame.columns
+# def addNewIndicator(
+#     indicatorFunction: Callable, indicatorName: str, priceDataFrame: pd.DataFrame
+# ) -> pd.DataFrame:
+#     indicatorDataFrame = priceDataFrame.apply(indicatorFunction, axis=0)
+#     name = indicatorName
+#     indicatorDataFrame.columns = [name]
+#
+#     return indicatorDataFrame
+
+def MACD(
+    close: pd.Series,
+    window_fast: int = 12,
+    window_slow: int = 26,
+    window_sign: int = 9,
+    select: str = "macd",
+) -> pd.Series:
+    """
+    Moving Average Convergence Divergence (MACD)
+    Is a trend-following momentum indicator that shows the
+    relationship between two moving averages of prices.
+    :param close_price:
+    :param window_fast:
+    :param window_slow:
+    :param window_sign:
+    :param select:
+    :return:
+    """
+
+    MACD = ta.trend.MACD(
+        close.shift(1),
+        window_fast=window_fast,
+        window_slow=window_slow,
+        window_sign=window_sign,
     )
-    return indicatorDataFrame
+
+    if select == "macd":
+        return MACD.macd()
+
+    if select == "macdsignal":
+        return MACD.macd_signal()
+
+
+def AddingNewIndicators(newVariableDataFrame: pd.DataFrame,
+                        indicators: Dict[str, Callable]= {"MACD": MACD}
+                        ) -> pd.DataFrame:
+    """
+    Adding new indicators to the dataframe
+    :rtype: object
+    :param newVariableDataFrame:
+    :return:
+    """
+    df_stack = stack_columns(newVariableDataFrame)
+    list_of_pairs = list(df_stack["Paire"].unique())
+
+    df_indicators = pd.DataFrame()
+
+    for paire in list_of_pairs:
+        df = df_stack[df_stack["Paire"] == paire]
+        df_copy = df.copy()
+        df_copy["Return"] = df_copy["Prix"].pct_change()
+        # Adding a lag of 1 day to the price
+        df_copy["Lag_Prix_1"] = df_copy["Prix"].shift(1)
+
+        for key, value in indicators.items():
+            df_copy[key] = value(df["Prix"])
+
+        df_indicators = pd.concat([df_indicators, df_copy], sort=False)
+
+    return df_indicators
+
 
 def AROON(close: pd.Series, period: int = 25) -> List[Any]:
     aroonIndicators = {
@@ -54,7 +117,7 @@ def AROON_UP(close: pd.Series,
     :param fillna:
     :return:
     """
-    aroon_up = ta.trend.aroon_up(close, window=window, fillna=fillna)
+    aroon_up = ta.trend.aroon_up(close.shift(1), window=window, fillna=fillna)
 
     return aroon_up
 
@@ -71,7 +134,7 @@ def AROON_DOWN(close: pd.Series,
     :param fillna:
     :return:
     """
-    aroon_down = ta.trend.aroon_down(close, window=window, fillna=fillna)
+    aroon_down = ta.trend.aroon_down(close.shift(1), window=window, fillna=fillna)
 
     return aroon_down
 
@@ -85,7 +148,7 @@ def EMA(close: pd.Series,
     :param fillna:
     :return:
     """
-    ema = ta.trend.ema_indicator(close, window=window, fillna=fillna)
+    ema = ta.trend.ema_indicator(close.shift(1), window=window, fillna=fillna)
 
     return ema
 
@@ -102,7 +165,7 @@ def TSI(close: pd.Series,
     :param fillna:
     :return:
     """
-    tsi = ta.momentum.tsi(close, window_slow=window_slow,
+    tsi = ta.momentum.tsi(close.shift(1), window_slow=window_slow,
                           window_fast=window_fast, fillna=fillna)
 
     return tsi
@@ -117,7 +180,7 @@ def ULCER(close: pd.Series,
     :param fillna:
     :return:
     """
-    ulcer_index = ta.volatility.ulcer_index(close, window=window, fillna=fillna)
+    ulcer_index = ta.volatility.ulcer_index(close.shift(1), window=window, fillna=fillna)
 
     return ulcer_index
 
@@ -135,7 +198,7 @@ def BOLLINGER(close: pd.Series,
     :return:
     """
 
-    bollinger_wband = ta.volatility.bollinger_wband(close,
+    bollinger_wband = ta.volatility.bollinger_wband(close.shift(1),
                                             window=window,
                                             window_dev=window_dev,
                                             fillna=fillna)
@@ -159,42 +222,12 @@ def DPO(close: pd.Series,
     :return:
     """
 
-    dpo = ta.trend.dpo(close, window=window, fillna=fillna)
+    dpo = ta.trend.dpo(close.shift(1), window=window, fillna=fillna)
 
     return dpo
 
 
-def MACD(
-    close_price: pd.Series,
-    window_fast: int = 12,
-    window_slow: int = 26,
-    window_sign: int = 9,
-    select: str = "macd",
-) -> pd.Series:
-    """
-    Moving Average Convergence Divergence (MACD)
-    Is a trend-following momentum indicator that shows the
-    relationship between two moving averages of prices.
-    :param close_price:
-    :param window_fast:
-    :param window_slow:
-    :param window_sign:
-    :param select:
-    :return:
-    """
 
-    MACD = ta.trend.MACD(
-        close_price,
-        window_fast=window_fast,
-        window_slow=window_slow,
-        window_sign=window_sign,
-    )
-
-    if select == "macd":
-        return MACD.macd()
-
-    if select == "macdsignal":
-        return MACD.macd_signal()
 
 def KST(close: pd.Series,
          roc1: int = 10, roc2: int = 15, roc3: int = 20, roc4: int = 30,
@@ -211,7 +244,7 @@ def KST(close: pd.Series,
 
     """
 
-    KST = ta.trend.KSTIndicator(close, roc1=roc1, roc2=roc2,
+    KST = ta.trend.KSTIndicator(close.shift(1), roc1=roc1, roc2=roc2,
                                 roc3=roc3, roc4=roc4,
                                 window1=window1, window2=window2,
                                 window3=window3, window4=window4,
@@ -247,7 +280,7 @@ def KAMA(close: pd.Series,
     :return:
     """
 
-    kama = ta.momentum.kama(close,
+    kama = ta.momentum.kama(close.shift(1),
                             window=window,
                             pow1=pow1,
                             pow2=pow2,
@@ -268,7 +301,7 @@ def PPO(close: pd.Series, window_slow: int = 26, window_fast: int = 12,
     :return:
     """
 
-    ppo = ta.momentum.ppo(close, window_slow=window_slow,
+    ppo = ta.momentum.ppo(close.shift(1), window_slow=window_slow,
                           window_fast=window_fast, window_sign=window_sign,
                           fillna=fillna)
 
@@ -283,7 +316,7 @@ def RSI(close: pd.Series, window: int = 14, fillna: bool = False) -> pd.Series:
     :return:
     """
 
-    rsi = ta.momentum.rsi(close, window=window, fillna=fillna)
+    rsi = ta.momentum.rsi(close.shift(1), window=window, fillna=fillna)
 
     return rsi
 
@@ -307,7 +340,7 @@ def STC(close: pd.Series, window_slow: int = 50, window_fast: int = 23,
     :return:
     """
 
-    stc = ta.trend.stc(close, window_slow=window_slow,
+    stc = ta.trend.stc(close.shift(1), window_slow=window_slow,
                             window_fast=window_fast, cycle=cycle,
                             smooth1=smooth1, smooth2=smooth2, fillna=fillna)
     return stc
@@ -321,7 +354,7 @@ def STOCHRSI(close: pd.Series, window: int = 14, fillna: bool = False) -> pd.Ser
     :return:
     """
 
-    stochrsi = ta.momentum.stochrsi(close, window=window, fillna=fillna)
+    stochrsi = ta.momentum.stochrsi(close.shift(1), window=window, fillna=fillna)
 
     return stochrsi
 
@@ -337,7 +370,7 @@ def TRIX(close: pd.Series, window: int = 15) -> pd.Series:
     :param window:
     :return:
     """
-    trix = ta.trend.trix(close, window=window)
+    trix = ta.trend.trix(close.shift(1), window=window)
 
     return trix
 
