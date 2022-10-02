@@ -38,11 +38,17 @@ def read_sp_data(column_to_keep: str = "Adj Close") -> pd.DataFrame:
     """
     df = pd.read_pickle("../data/sp_500_data.pkl")
 
+
     # df modifiée seulement pour faire des tests
     # On prend les 10 premières colonnes
     df_mod = df[column_to_keep]
+    # Delete GOOG column
+    df_mod = df_mod.copy()
+    df_mod = df_mod.drop(["GOOG"], axis=1)
+
 
     return df_mod
+
 
 
 

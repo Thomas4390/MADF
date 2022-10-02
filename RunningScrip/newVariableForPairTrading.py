@@ -18,7 +18,7 @@ from functions.dataTransformation import stack_columns
 
 
 def createModifiedVariableForPairTrading(
-    rollingWindow: int = 60, numberOfPairsToTrade: int = 2, method="norm"
+    rollingWindow: int = 60, numberOfPairsToTrade: int = 6, method="norm"
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     # Étape 1 : Importer les prix des titres à analyser
     # prixTitres = importDataFromYahoo(["AAPL", "MSFT", "META"]).dropna(how="any")
@@ -76,11 +76,11 @@ def createModifiedVariableForPairTrading(
 
         newColumns = newVar.columns # nouvelle paires de variables
 
-        # columnsToKeep = [True] * newVar.shape[1]
-        # if not newVariableDataFrame.empty:
-        #     columnsToKeep = list(
-        #         map(lambda x: x not in newVariableDataFrame.columns, newColumns)
-        #     )
+        columnsToKeep = [True] * newVar.shape[1]
+        if not newVariableDataFrame.empty:
+            columnsToKeep = list(
+                map(lambda x: x not in newVariableDataFrame.columns, newColumns)
+            )
 
         # TODO: Vérifier si ça fonctionne: newColumns[columnsToKeep]
 

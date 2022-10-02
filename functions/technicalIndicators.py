@@ -67,7 +67,7 @@ def AddingNewIndicators(newVariableDataFrame: pd.DataFrame,
         df_copy = df.copy()
         df_copy["Return"] = df_copy["Prix"].pct_change()
         # Adding a lag of 1 day to the price
-        df_copy["Lag_Prix_1"] = df_copy["Prix"].shift(1)
+        df_copy["Lag_Return_1"] = df_copy["Return"].shift(1)
 
         for key, value in indicators.items():
             df_copy[key] = value(df["Prix"])

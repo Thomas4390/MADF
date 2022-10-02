@@ -25,7 +25,7 @@ indicators = {
 
 def getData(
     rollingWindow: int = 60,
-    numberOfPairsToTrade: int = 2,
+    numberOfPairsToTrade: int = 5,
     method: str = "norm",
     indicators: Dict[str, Callable] = {"MACD": MACD},
     save_to_pickle: bool = False
@@ -52,10 +52,10 @@ def getData(
 
     if save_to_pickle:
         newVariableDataFrame.to_pickle(
-            f"../data/newVariableDataFrame{rollingWindow}_{numberOfPairsToTrade}.pkl")
+            f"../data/newVariableDataFrame_{rollingWindow}_{numberOfPairsToTrade}.pkl")
         newVariableToTradeDataFrame.to_pickle(
-            f"../data/newVariableToTradeDataFrame{rollingWindow}_{numberOfPairsToTrade}.pkl")
-        df_indicators.to_pickle(f"../data/indicatorsDataFrame{rollingWindow}_{numberOfPairsToTrade}.pkl")
+            f"../data/newVariableToTradeDataFrame_{rollingWindow}_{numberOfPairsToTrade}.pkl")
+        df_indicators.to_pickle(f"../data/indicatorsDataFrame_{rollingWindow}_{numberOfPairsToTrade}.pkl")
 
 
     return newVariableDataFrame, newVariableToTradeDataFrame, df_indicators
