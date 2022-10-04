@@ -5,8 +5,7 @@ from functions.technicalIndicators import *
 from typing import Callable, Dict, List, Tuple
 
 indicators = {
-    "AROON_UP": AROON_UP,
-    "AROON_DOWN": AROON_DOWN,
+    "AROON": AROON,
     "MACD": MACD,
     "RSI": RSI,
     "STOCHRSI": STOCHRSI,

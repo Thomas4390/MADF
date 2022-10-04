@@ -77,32 +77,48 @@ def AddingNewIndicators(newVariableDataFrame: pd.DataFrame,
     return df_indicators
 
 
-def AROON(close: pd.Series, period: int = 25) -> List[Any]:
-    aroonIndicators = {
-        "up": [np.nan] * period,
-        "down": [np.nan] * period,
-        "diff": [np.nan] * period,
-        "date": list(close.index[:period]),
-    }
-    for idx in range(close.shape[0] - period):
-        currentPeriodStockPrice: pd.Series = close.iloc[idx : idx + period]
-        aroonIndicators["date"].append(close.index[idx + period])
-        if currentPeriodStockPrice.isnull().any():
-            aroonIndicators["up"].append(np.nan)
-            aroonIndicators["down"].append(np.nan)
-            aroonIndicators["diff"].append(np.nan)
-        else:
-            aroonIndicators["up"].append(
-                np.argmax(currentPeriodStockPrice) * 100 / period
-            )
-            aroonIndicators["down"].append(
-                np.argmin(currentPeriodStockPrice) * 100 / period
-            )
-            aroonIndicators["diff"].append(
-                aroonIndicators["up"][-1] - aroonIndicators["down"][-1]
-            )
-    return aroonIndicators["diff"]
+# def AROON(close: pd.Series, period: int = 25) -> List[Any]:
+#     aroonIndicators = {
+#         "up": [np.nan] * period,
+#         "down": [np.nan] * period,
+#         "diff": [np.nan] * period,
+#         "date": list(close.index[:period]),
+#     }
+#     for idx in range(close.shape[0] - period):
+#         currentPeriodStockPrice: pd.Series = close.iloc[idx : idx + period]
+#         aroonIndicators["date"].append(close.index[idx + period])
+#         if currentPeriodStockPrice.isnull().any():
+#             aroonIndicators["up"].append(np.nan)
+#             aroonIndicators["down"].append(np.nan)
+#             aroonIndicators["diff"].append(np.nan)
+#         else:
+#             aroonIndicators["up"].append(
+#                 np.argmax(currentPeriodStockPrice) * 100 / period
+#             )
+#             aroonIndicators["down"].append(
+#                 np.argmin(currentPeriodStockPrice) * 100 / period
+#             )
+#             aroonIndicators["diff"].append(
+#                 aroonIndicators["up"][-1] - aroonIndicators["down"][-1]
+#             )
+#     return aroonIndicators["diff"]
 
+
+def AROON(close: pd.Series,
+             window: int = 25,
+             fillna: bool = False) -> pd.Series:
+    """
+    Aroon Indicator (AI)
+    Identify when trends are likely to change direction
+
+    :param close:
+    :param window:
+    :param fillna:
+    :return:
+    """
+    aroon = ta.trend.aroon(close.shift(1), window=window, fillna=fillna)
+
+    return aroon
 
 def AROON_UP(close: pd.Series,
              window: int = 25,
