@@ -5,7 +5,6 @@ from functions.technicalIndicators import *
 from typing import Callable, Dict, List, Tuple
 
 indicators = {
-    "AROON": AROON,
     "AROON_UP": AROON_UP,
     "AROON_DOWN": AROON_DOWN,
     "MACD": MACD,
@@ -59,5 +58,8 @@ def getData(
 
 
     return newVariableDataFrame, newVariableToTradeDataFrame, df_indicators
+
+getData(numberOfPairsToTrade=2, save_to_pickle=True)
+getData(numberOfPairsToTrade=5, save_to_pickle=True)
 
 
